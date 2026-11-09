@@ -3,6 +3,9 @@ T = []
 dernier_libre = 2
 
 
+def init_T(): 
+    T = [None, None]
+
 def ligne_tab(nb: int) -> int:
     """Renvoie le niveau local ( borne inférieur de notre intervalle )"""
     res = 0                       # niveau trouvé
@@ -54,20 +57,40 @@ def remonter(i: int):
             if p >= 2:
                 m = miroir(p)
             else:
-                m = -1            # parent = racine : pas de test
-        if existe(m) and T[i] > T[m]:
+                m = -1 
+            if existe(m) and T[i] > T[m]: 
+                echanger(i, m)
+                organise_sd(m)
+            else: 
+                remonter_sg(i)
+
+            
+        elif T[i] > T[m]:        # parent = racine : pas de test
             echanger(i, m)
             remonter_sd(m)        # n est maintenant dans le tas inverse
-            return
-        remonter_sg(i)
+        else: 
+            remonter_sg(i)
     else:
         m = miroir(i)             # existe toujours
         if T[i] < T[m]:
             echanger(i, m)
             remonter_sg(m)        # n est maintenant dans le tas
-            return
-        remonter_sd(i)
+        else:
+            remonter_sd(i)
 
+
+# def organise_sg(i : int): 
+#     p = parent(i)
+#     if p >= 2 and T[i] < T[p]:
+#         echanger(i, p)
+#         organise_sg(p)
+
+def organise_sd(i : int): 
+    """Réorganisation correcte de notre tas avec le max en haut"""
+    p = parent(i)
+    if p >= 2 and T[i] > T[p]:
+        echanger(i, p)
+        organise_sd(p)
 
 def remonter_sg(i: int):
     """ Etape de mise a jour du tas avec le mini en haut"""
@@ -195,17 +218,19 @@ def verifier_prop_e()->bool:
 
     
 
-def test(born_inf : int, born_sup: int):
+def test(born_inf : int, born_sup: int, nb):
 
-    nb = random.randint(born_inf, born_sup)
 
 
     for i in range(0,nb): 
         v = random.randint(born_inf, born_sup)
         inserer(v)
-    print(verifier_prop_e())
-    print(verifier_arbre_parfait())
-    print(verifier_tas())
+    print("\n\n")
+    affiche_arbre()
+    print("\n\n")
+    print("Vérification de la propriété e : ", verifier_prop_e())
+    print("Vérification de la proppriété arbre parfait : ", verifier_arbre_parfait())
+    print("Vérification de la propriété de nos deux tas, premier tas normal second tas inversé : ", verifier_tas())
 
 T = [None, None]  # On commence avec T[1]
 
@@ -213,21 +238,127 @@ T = [None, None]  # On commence avec T[1]
 
 
 
-for i in range(0, 50): 
-    test(0, 10000)
+# for i in range(0, 50): 
+#     test(0, 10000)
 
 
-# for t in [2, 11, 7, 30]: 
+# for t in [2, 11, 7, 30, 20, 50, 10, 11, 7]: 
 #     inserer(t) 
 #     print("\n\n\n")
 #     affiche_arbre()
+#     print(verifier_prop_e())
+#     print(verifier_arbre_parfait())
+#     print(verifier_tas())
 
 
-# print(verifier_prop_e())
-# print(verifier_arbre_parfait())
-# print(verifier_tas())
+
+def affiche_menu(): 
+    print("\n")
+    print("Veuillez choisir une de ces options : ")
+    print("1 - Test automatique")
+    print("2 - Test Manuelle")
+    print("3 - Quitter")
+    val = 0
+    while (val not in [1,2,3]): 
+
+        val = int(input("Veuillez choisir la valeur souhaité : "))
+    return val
+
+def test_auto():
+    print("\n\nTest de notre arbre de tas Hybride en automatique \n")
+    val = int(input("Veuillez choisir le nombre de test que vous voulez effectuer : ")) 
+    val2= int(input("Veuillez choisir la valeur minimum pouvant etre inséré dans l'arbre : "))
+    val3 = int(input("Veuillez choisir la valeur maximum pouvant etre inséré dans l'arbre : "))
+    
+    print("\nLes paramètres sélectionné de ce test automatique sont : ")
+    print("Nombre de test : ", val)
+    print("Valeur minimum : ", val2)
+    print("Valeur maximum : ", val3)
+    print("\n")
+
+    return [val, val2, val3]
 
 
+
+
+def menu_test_manuel(): 
+    print("\n")
+    print("Menu test manuelle")
+    print("Veuillez choisir une de ces options : ")
+    print("1 - Ajout nombre aléatoire")
+    print("2 - Ajout nombre choisis")
+    print("3 - Tester la propriété e")
+    print("4 - Tester si l'arbre est parfait")
+    print("5 - Test si l'organisation des deux tas son correcte")
+    print("6 - Tester l'ensemble des propriété")
+    print("7 - Arreter le test")
+    val = 0
+    while (val not in [1,2,3,4,5,6,7]): 
+
+        val = int(input("Veuillez choisir la valeur souhaité : "))
+    return val
+
+
+def test_interactif(): 
+    global T, dernier_libre
+    print("Test : ")
+    val = 0
+    while ( val != 3): 
+        val = affiche_menu()
+
+
+        if val == 1 : 
+            param = test_auto()
+            print(param)
+            for i in range(1, param[0] +1 ): 
+                print("Test numéro : ", i)
+                nb_valeur = int(input("Veuillez chosir le nombre de valeur dans votre arbre numéro " + str(i) + ": "))
+                test(param[1], param[2], nb_valeur)
+                T = [None, None]
+                dernier_libre = 2
+
+        if val == 2: 
+            param_act = False
+            choix = 0
+            while (choix != 7): 
+                choix = menu_test_manuel()
+
+                if choix == 1 and not param_act: 
+                    param1= int(input("Veuillez choisir la valeur minimum pouvant etre inséré dans l'arbre : "))
+                    param2= int(input("Veuillez choisir la valeur maximum pouvant etre inséré dans l'arbre : "))
+                    
+                    print("\nLes paramètres sélectionné de ce test automatique sont : ")
+                    print("Valeur minimum : ", param1)
+                    print("Valeur maximum : ", param2)
+                    print("\n")
+                    
+                    param_act = True
+
+                if choix == 1: 
+                    inserer(random.randint(param1, param2))
+                    affiche_arbre()
+                elif choix == 2: 
+                    nb = int(input("Veuillez choisir la valeur que vous voulez ajouter dans l'arbre : "))
+                    inserer(nb)
+                    affiche_arbre()
+                elif choix == 3:
+                        print("Vérification de la propriété e : ", verifier_prop_e())
+                elif choix == 4: 
+
+                    print("Vérification de la proppriété arbre parfait : ", verifier_arbre_parfait())
+                elif choix == 5: 
+
+                    print("Vérification de la propriété de nos deux tas, premier tas normal second tas inversé : ", verifier_tas())
+                elif choix == 6: 
+                        print("Vérification de la propriété e : ", verifier_prop_e())
+                        print("Vérification de la proppriété arbre parfait : ", verifier_arbre_parfait())
+                        print("Vérification de la propriété de nos deux tas, premier tas normal second tas inversé : ", verifier_tas())
+                
+            print("Vous avez quitter l'arbre actuelle")
+            T = [None, None]
+            dernier_libre = 2
+                    
+test_interactif()
 
 
 
