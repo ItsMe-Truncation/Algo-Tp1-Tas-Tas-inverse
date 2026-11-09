@@ -1,7 +1,6 @@
-
+import random
 T = []
-nb_g = 0
-nb_d = 0
+dernier_libre = 2
 
 
 def ligne_tab(nb: int) -> int:
@@ -89,28 +88,18 @@ def remonter_sd(i: int):
 
 
 def inserer(x: int):
-    global nb_g, nb_d
+    global dernier_libre
 
     # On cherche a trouver la nouvelle position
 
-    if nb_g == nb_d:                  #meme taille on insere a gauche
-        j = nb_g + 1                  # rang du nouveau nœud dans Sg 
-        l = ligne_tab(j)
-        p = 2 ** (l + 1) + (j - 2 ** l)
-        nb_g += 1
-    else:                             # sinon droite
-        j = nb_d + 1
-        l = ligne_tab(j)
-        p = 2 ** (l + 1) + 2 ** l + (j - 2 ** l)   
-        nb_d += 1
+    while  dernier_libre < len(T) and T[dernier_libre] is not None: 
+        dernier_libre = dernier_libre + 1
 
-    # Le tableau a des trous
-    while len(T) <= p:
+    if dernier_libre == len(T): 
         T.append(None)
+    T[dernier_libre] = x
 
-    T[p] = x
-
-    remonter(p)
+    remonter(dernier_libre)
 
     return None
 
@@ -127,15 +116,116 @@ def affiche_arbre(i=1, c=""):
     print(c + ("•" if T[i] is None else str(T[i])))
     affiche_arbre(2 * i, c + "\t")
 
+def sup(v1: int, v2: int)->bool: 
+    return v1 >= v2
 
+def inf(v1: int, v2: int)->bool: 
+    return v1 <= v2
+
+def compare_fils(i: int, compare)->bool: 
+    if not existe(i):
+        return True
+    fg, fd = 2 * i, 2 * i + 1
+    res = True
+    if existe(fg):
+        res = compare(T[i], T[fg])
+    if res and existe(fd):
+        res = compare(T[i], T[fd])
+    return res
+
+
+def verifier_tas(): 
+    res = True
+    niveau_g = ligne_tab(len(T))
+    i = 1
+    while res and i < niveau_g: 
+        j = 0
+        while res and j < (2**i) //2 : 
+            res = compare_fils(2**i + j, inf)
+            j+=1
+
+        while res and j >= (2**i) // 2 and j < 2**i: 
+            res = compare_fils(2**i +j, sup)
+            j+=1
+        i +=1
+
+    
+    return res
+
+
+
+def verifier_arbre_parfait(): 
+    i = 2
+    none_act = False
+    res = True
+
+    while i < len(T) and res: 
+        if T[i] is None: 
+            none_act = True
+        elif T[i] is not None and none_act: 
+            res = False
+
+        i = i + 1
+
+    return res
+    
+def prop_e(index: int)-> bool:
+    res = True 
+    if existe(index): 
+
+        m = miroir(index)
+        if existe(m): 
+            res = T[index] <= T[m]
+        else: 
+            res= T[index] <= T[parent(m)]
+    return res
+
+
+
+def verifier_prop_e()->bool: 
+    taille = ligne_tab(dernier_libre)
+
+    for i in range(1, taille +1): 
+
+        for j in range(2**i, 2**(i+1) // 2): 
+            if not prop_e(2**i+j): 
+                return False
+
+    return True
+
+    
+
+def test(born_inf : int, born_sup: int):
+
+    nb = random.randint(born_inf, born_sup)
+
+
+    for i in range(0,nb): 
+        v = random.randint(born_inf, born_sup)
+        inserer(v)
+    print(verifier_prop_e())
+    print(verifier_arbre_parfait())
+    print(verifier_tas())
 
 T = [None, None]  # On commence avec T[1]
-nb_g = nb_d = 0
-for x in [15, 3, 40, 8, 27, 1, 60, 5, 41, 21, 11, 71, 111, 152, 634, 85, 47, 14, 21, 100, 99]:
-    inserer(x)
-affiche_arbre()
 
 
+
+
+
+for i in range(0, 50): 
+    test(0, 10000)
+
+
+# for t in [2, 11, 7, 30]: 
+#     inserer(t) 
+#     print("\n\n\n")
+#     affiche_arbre()
+
+
+# print(verifier_prop_e())
+# print(verifier_arbre_parfait())
+# print(verifier_tas())
 
 
 
