@@ -225,9 +225,10 @@ def test(born_inf : int, born_sup: int, nb):
     for i in range(0,nb): 
         v = random.randint(born_inf, born_sup)
         inserer(v)
-    print("\n\n")
-    affiche_arbre()
-    print("\n\n")
+        print("\n\n")
+        affiche_arbre()
+        print("\n\n")
+    
     print("Vérification de la propriété e : ", verifier_prop_e())
     print("Vérification de la proppriété arbre parfait : ", verifier_arbre_parfait())
     print("Vérification de la propriété de nos deux tas, premier tas normal second tas inversé : ", verifier_tas())
